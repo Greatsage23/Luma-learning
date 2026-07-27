@@ -27,6 +27,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Use browser-only TypeScript configuration
+        run: cp tsconfig.pages.json tsconfig.json
       - name: Build static site
         run: npm run build:pages
       - name: Configure Pages
