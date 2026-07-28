@@ -1,0 +1,1 @@
+export default function AccessDenied(){return <main className="access-denied"><span>!</span><small>ACCESS RESTRICTED</small><h1>You cannot access this workspace.</h1><p>Your account may be suspended, disabled, or assigned to another portal. Contact the academy administrator if you believe this is an error.</p><a href="/">Return to LUMA</a></main>}

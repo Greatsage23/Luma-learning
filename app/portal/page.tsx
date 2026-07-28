@@ -1,0 +1,3 @@
+import { redirect } from "next/navigation";import { currentSession } from "@/lib/supabase";import PortalClient from "./portal-client";
+export const dynamic="force-dynamic";
+export default async function PortalPage(){const session=await currentSession();if(!session)redirect("/?auth=login");if(["suspended","disabled"].includes(session.profile.status))redirect("/access-denied");const role=(session.profile.role.charAt(0).toUpperCase()+session.profile.role.slice(1)) as "Student"|"Teacher"|"Administrator";return <PortalClient role={role} passwordChangeRequired={session.profile.status==="password_change_required"}/>}
