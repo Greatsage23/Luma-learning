@@ -2,13 +2,13 @@
 
 ## Supabase account setup
 
-The application uses Supabase Auth and PostgreSQL for role-based accounts. Email confirmation is intentionally disabled, so new student accounts become active immediately.
+The application uses Supabase Auth, cookie-based SSR sessions, and PostgreSQL profiles for role-based accounts.
 
 1. Create a Supabase project and run `supabase/migrations/001_account_architecture.sql` in the SQL editor.
-2. In **Authentication → Providers → Email**, disable **Confirm email**.
+2. In **Authentication → Providers → Email**, choose whether students must confirm their email. With confirmation enabled, students confirm before signing in.
 3. Create the academy administrator in **Authentication → Users**.
 4. Run the bootstrap statement at the bottom of the migration with the administrator email.
-5. Add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and the server-only `SUPABASE_SERVICE_ROLE_KEY` to Vercel.
+5. Add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and the server-only `SUPABASE_SERVICE_ROLE_KEY` to Vercel.
 
 Never expose the service-role key in browser code or commit real environment values. Teacher accounts are created only through the administrator portal and receive one-time temporary passwords.
 
@@ -16,10 +16,16 @@ An original, responsive learning-management platform for Basic 4–9 learners, t
 
 ## Local setup
 
-1. Install Node.js 22.13+ and dependencies with `npm ci`.
-2. Copy `.env.example` to `.env.local` when payment and messaging providers are added.
-3. Run `npm run dev` and open the printed local address.
-4. Use the “Preview as” selector to explore Student, Teacher and Administrator workspaces.
+1. Install Node.js 22.13+ and dependencies with `pnpm install --frozen-lockfile`.
+2. Copy `.env.example` to `.env.local` and add the Supabase project URL and publishable key.
+3. Run `pnpm dev` and open the printed local address.
+4. Create a student account or sign in with a provisioned staff account.
+
+## Authentication and authorization
+
+Supabase Auth stores sessions in cookies through `@supabase/ssr`. The Next.js proxy refreshes and verifies tokens before `/portal` renders. New public accounts receive student access from the database trigger. Teacher and administrator roles are managed in the protected profile table; selecting a portal in the login form never grants that role.
+
+Protected routes require a server runtime, so deploy to Vercel or another Next.js-compatible host. GitHub Pages static export is intentionally no longer used.
 
 ## Data and storage
 

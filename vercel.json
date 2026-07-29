@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "cp tsconfig.pages.json tsconfig.json && npm run build:pages",
-  "installCommand": "npm ci"
+  "buildCommand": "pnpm run build:pages",
+  "installCommand": "pnpm install --frozen-lockfile"
 }
