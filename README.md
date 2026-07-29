@@ -1,5 +1,17 @@
 # Luma Learning Platform
 
+## Supabase account setup
+
+The application uses Supabase Auth and PostgreSQL for role-based accounts. Email confirmation is intentionally disabled, so new student accounts become active immediately.
+
+1. Create a Supabase project and run `supabase/migrations/001_account_architecture.sql` in the SQL editor.
+2. In **Authentication → Providers → Email**, disable **Confirm email**.
+3. Create the academy administrator in **Authentication → Users**.
+4. Run the bootstrap statement at the bottom of the migration with the administrator email.
+5. Add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and the server-only `SUPABASE_SERVICE_ROLE_KEY` to Vercel.
+
+Never expose the service-role key in browser code or commit real environment values. Teacher accounts are created only through the administrator portal and receive one-time temporary passwords.
+
 An original, responsive learning-management platform for Basic 4–9 learners, teachers and administrators in Ghana.
 
 ## Local setup
