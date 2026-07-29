@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export type AppRole = "student" | "teacher" | "administrator";
 export type AccountStatus = "pending_verification" | "active" | "suspended" | "disabled" | "password_change_required";
-export type Profile = {id:string;full_name:string;email:string;phone:string|null;role:AppRole;status:AccountStatus;class_level:string|null;staff_id:string|null;username:string|null;last_login_at:string|null;created_at:string};
+export type Profile = {id:string;full_name:string;email:string;phone:string|null;role:AppRole;status:AccountStatus;class_level:string|null;staff_id:string|null;username:string|null;last_login_at:string|null;password_changed_at:string|null;created_at:string};
 
 const url=()=>process.env.NEXT_PUBLIC_SUPABASE_URL;
 const publishable=()=>process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
