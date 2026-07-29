@@ -1,8 +1,19 @@
 import { NextResponse } from "next/server";
-import { secureCookie, supabaseFetch } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
+
+const usernamePattern=/^[a-zA-Z0-9._-]{3,30}$/;
 
 export async function POST(request:Request){
-  try{const body=await request.json();const {fullName,email,phone,password,confirmPassword,classLevel,acceptedTerms}=body;if(!fullName||!email||!phone||!password||!classLevel)return NextResponse.json({error:"Complete all required fields."},{status:400});if(password!==confirmPassword)return NextResponse.json({error:"Passwords do not match."},{status:400});if(password.length<10||!/[A-Z]/.test(password)||!/[0-9]/.test(password))return NextResponse.json({error:"Use at least 10 characters, one uppercase letter, and one number."},{status:400});if(!acceptedTerms)return NextResponse.json({error:"Accept the terms and privacy policy."},{status:400});
-    const auth=await supabaseFetch("/auth/v1/signup",{method:"POST",body:JSON.stringify({email,password,data:{full_name:fullName,phone,class_level:classLevel,role:"student"}})});const data=await auth.json();if(!auth.ok)return NextResponse.json({error:data.msg||data.error_description||"An account with this email may already exist."},{status:409});if(!data.access_token)return NextResponse.json({error:"Disable email confirmation in Supabase Auth settings to activate students immediately."},{status:409});
-    const response=NextResponse.json({role:"student"},{status:201});response.cookies.set("luma_access_token",data.access_token,secureCookie(data.expires_in||3600));response.cookies.set("luma_refresh_token",data.refresh_token,secureCookie(60*60*24*30));return response;
-  }catch{return NextResponse.json({error:"Unable to create the account."},{status:500})}}
+  try{
+    const {username,password}=await request.json();
+    const normalized=String(username||"").trim().toLowerCase();
+    if(!usernamePattern.test(normalized))return NextResponse.json({error:"Use 3–30 letters, numbers, dots, underscores, or hyphens for your username."},{status:400});
+    if(String(password||"").length<10||!/[A-Z]/.test(password)||!/[0-9]/.test(password))return NextResponse.json({error:"Use at least 10 characters, one uppercase letter, and one number."},{status:400});
+    const email=`${normalized}@students.luma.invalid`;
+    const supabase=await createClient();
+    const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:normalized,username:normalized}}});
+    if(error)return NextResponse.json({error:error.message||"That username is already in use."},{status:409});
+    if(!data.session)return NextResponse.json({error:"Student auto-confirmation must be enabled in Supabase Auth before username-only registration can be used."},{status:409});
+    return NextResponse.json({role:"student"},{status:201});
+  }catch{return NextResponse.json({error:"Unable to create the account."},{status:500})}
+}
