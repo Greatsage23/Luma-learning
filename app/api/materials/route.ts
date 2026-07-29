@@ -38,13 +38,22 @@ export async function POST(request:Request){
 }
 
 export async function PATCH(request:Request){
-  const session=await requireRole(["administrator"]);
-  if(!session)return NextResponse.json({error:"Administrator access is required."},{status:403});
+  const session=await requireRole(["teacher","administrator"]);
+  if(!session)return NextResponse.json({error:"Teacher or administrator access is required."},{status:403});
   try{
-    const {id,status}=await request.json();
-    if(!Number.isInteger(id)||!["published","rejected","archived"].includes(status))return NextResponse.json({error:"Invalid review request."},{status:400});
-    const supabase=await createClient();const {error}=await supabase.from("learning_materials").update({status,reviewed_by:session.user.id,reviewed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",id);
+    const body=await request.json();const {id}=body;
+    if(!Number.isInteger(id))return NextResponse.json({error:"Invalid material."},{status:400});
+    const supabase=await createClient();let changes:Record<string,unknown>;
+    if(body.status){
+      if(session.profile.role!=="administrator"||!["published","rejected","archived"].includes(body.status))return NextResponse.json({error:"Administrator review is required."},{status:403});
+      changes={status:body.status,reviewed_by:session.user.id,reviewed_at:new Date().toISOString(),updated_at:new Date().toISOString()};
+    }else{
+      const title=String(body.title||"").trim();const description=String(body.description||"").trim();const subject=String(body.subject||"");const classLevel=String(body.classLevel||"");
+      if(title.length<3||title.length>120||!allowedSubjects.includes(subject)||!allowedClasses.includes(classLevel))return NextResponse.json({error:"Complete the title, subject and class fields."},{status:400});
+      changes={title,description:description||null,subject,class_level:classLevel,updated_at:new Date().toISOString()};
+    }
+    const {error}=await supabase.from("learning_materials").update(changes).eq("id",id);
     if(error)return NextResponse.json({error:"Unable to update the material."},{status:500});
     return NextResponse.json({ok:true});
-  }catch{return NextResponse.json({error:"Unable to review the material."},{status:500})}
+  }catch{return NextResponse.json({error:"Unable to update the material."},{status:500})}
 }
