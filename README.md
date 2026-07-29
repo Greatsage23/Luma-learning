@@ -5,7 +5,7 @@
 The application uses Supabase Auth, cookie-based SSR sessions, and PostgreSQL profiles for role-based accounts.
 
 1. Create a Supabase project and run `supabase/migrations/001_account_architecture.sql` in the SQL editor.
-2. In **Authentication → Providers → Email**, choose whether students must confirm their email. With confirmation enabled, students confirm before signing in.
+2. In **Authentication → Providers → Email**, disable **Confirm email**. Username-only student registration derives an internal Auth email, so public students cannot complete email confirmation.
 3. Create the academy administrator in **Authentication → Users**.
 4. Run the bootstrap statement at the bottom of the migration with the administrator email.
 5. Add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and the server-only `SUPABASE_SERVICE_ROLE_KEY` to Vercel.
@@ -19,7 +19,7 @@ An original, responsive learning-management platform for Basic 4–9 learners, t
 1. Install Node.js 22.13+ and dependencies with `pnpm install --frozen-lockfile`.
 2. Copy `.env.example` to `.env.local` and add the Supabase project URL and publishable key.
 3. Run `pnpm dev` and open the printed local address.
-4. Create a student account or sign in with a provisioned staff account.
+4. Students register with only a username and password; staff sign in with administrator-issued credentials.
 
 ## Authentication and authorization
 
