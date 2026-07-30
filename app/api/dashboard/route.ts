@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireRole,supabaseFetch } from "@/lib/supabase";
 
-type ProfileRow={id:string;role:string;status:string;class_level:string|null};
+type ProfileRow={id:string;full_name:string;email:string;role:string;status:string;class_level:string|null};
 type AssignmentRow={subjects:string[];classes:string[]};
 type MaterialRow={id:number;status:string};
 
@@ -9,7 +9,7 @@ export async function GET(){
   const session=await requireRole(["student","teacher","administrator"]);
   if(!session)return NextResponse.json({error:"Forbidden"},{status:403});
   const [profilesResponse,materialsResponse]=await Promise.all([
-    supabaseFetch("/rest/v1/profiles?select=id,role,status,class_level&deleted_at=is.null",{},undefined,true),
+    supabaseFetch("/rest/v1/profiles?select=id,full_name,email,role,status,class_level&deleted_at=is.null",{},undefined,true),
     supabaseFetch("/rest/v1/learning_materials?select=id,status",{},undefined,true),
   ]);
   if(!profilesResponse.ok||!materialsResponse.ok)return NextResponse.json({error:"Unable to load live dashboard data."},{status:502});
@@ -24,9 +24,10 @@ export async function GET(){
   const visibleStudents=profiles.filter(profile=>profile.role==="student"&&(session.profile.role!=="teacher"||Boolean(profile.class_level&&assignedClasses.includes(profile.class_level))));
   const classCounts=assignedClasses.map(classLevel=>({classLevel,count:visibleStudents.filter(profile=>profile.class_level===classLevel).length}));
   return NextResponse.json({
-    viewer:{fullName:session.profile.full_name,username:session.profile.username,classLevel:session.profile.class_level,role:session.profile.role},
+    viewer:{fullName:session.profile.full_name,email:session.profile.email,phone:session.profile.phone,username:session.profile.username,classLevel:session.profile.class_level,role:session.profile.role,status:session.profile.status,lastLoginAt:session.profile.last_login_at},
     counts:{students:profiles.filter(profile=>profile.role==="student").length,activeStudents:profiles.filter(profile=>profile.role==="student"&&profile.status==="active").length,teachers:profiles.filter(profile=>profile.role==="teacher").length,activeTeachers:profiles.filter(profile=>profile.role==="teacher"&&profile.status==="active").length,pendingMaterials:materials.filter(material=>material.status==="pending").length,publishedMaterials:materials.filter(material=>material.status==="published").length},
     assignments:{subjects:[...new Set(assignments.flatMap(value=>value.subjects))],classes:assignedClasses},
     classCounts,
+    students:session.profile.role==="teacher"?visibleStudents.map(profile=>({id:profile.id,fullName:profile.full_name,email:profile.email,classLevel:profile.class_level,status:profile.status})):[],
   });
 }

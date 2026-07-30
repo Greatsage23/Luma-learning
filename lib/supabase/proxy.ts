@@ -2,6 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
+  const mutating=["POST","PUT","PATCH","DELETE"].includes(request.method);
+  const origin=request.headers.get("origin");
+  if(request.nextUrl.pathname.startsWith("/api/")&&mutating&&origin&&origin!==request.nextUrl.origin)return NextResponse.json({error:"Cross-site request blocked."},{status:403});
   let response = NextResponse.next({ request });
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,5 +34,9 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  response.headers.set("X-Content-Type-Options","nosniff");
+  response.headers.set("Referrer-Policy","strict-origin-when-cross-origin");
+  response.headers.set("Permissions-Policy","camera=(), microphone=(self), geolocation=()");
+  response.headers.set("Content-Security-Policy","frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
   return response;
 }
