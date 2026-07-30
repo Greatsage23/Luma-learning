@@ -39,7 +39,7 @@ function Landing({openAuth}:{openAuth:(role:Role,mode:Exclude<AuthMode,null>)=>v
       <section className="courses-section" id="courses"><div className="section-title"><div><span className="kicker">EXPLORE WHAT’S POSSIBLE</span><h2>Courses learners love</h2></div><a className="outline" href="#courses">Browse all courses →</a></div><div className="recommend-grid">{recommended.map(c=><CourseTile key={c.title} course={c} view={()=>setPreviewSubject(courseSubject(c.title))}/>)}</div></section>
       <section className="cta" id="pricing"><span className="pill light">START YOUR JOURNEY TODAY</span><h2>Brighter learning starts here.</h2><p>Join a growing community of learners, educators, and schools building what comes next.</p><button className="button light-button" onClick={()=>openAuth("Student","signup")}>Create your free account →</button></section>
     </main>
-    <footer><Logo/><p>Modern learning for ambitious students, inspiring teachers, and forward-thinking schools.</p><div><a>About</a><a>Help Center</a><a>Privacy</a><a>Terms</a><a>Contact</a></div><small>© 2026 LUMA Learning Platform. All rights reserved.</small></footer>
+    <footer><Logo/><p>Modern learning for ambitious students, inspiring teachers, and forward-thinking schools.</p><div><a href="/about">About</a><a href="/help">Help Center</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a></div><small>© 2026 LUMA Learning Platform. All rights reserved.</small></footer>
     {previewSubject&&<CoursePreviewDialog subject={previewSubject} close={()=>setPreviewSubject(null)} login={()=>{setPreviewSubject(null);openAuth("Student","login")}}/>}
   </div>
 }
