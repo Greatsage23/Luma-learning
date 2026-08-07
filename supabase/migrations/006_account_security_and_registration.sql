@@ -17,7 +17,7 @@ create index if not exists login_attempts_attempted_at_idx on public.login_attem
 create index if not exists login_attempts_user_idx on public.login_attempts(user_id,attempted_at desc);
 alter table public.login_attempts enable row level security;
 drop policy if exists "administrators read login attempts" on public.login_attempts;
-create policy "administrators read login attempts" on public.login_attempts for select to authenticated using (public.current_role()='administrator');
+create policy "administrators read login attempts" on public.login_attempts for select to authenticated using (private.current_role()='administrator');
 grant select on public.login_attempts to authenticated;
 grant select,insert,update,delete on public.login_attempts to service_role;
 grant usage,select on sequence public.login_attempts_id_seq to service_role;
